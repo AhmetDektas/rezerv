@@ -1,0 +1,326 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────────────────────
+
+enum Category {
+  FOOD_DRINK
+  HEALTH
+  SPORTS
+  VETERINARY
+}
+
+enum DepositType {
+  FIXED
+  PERCENTAGE
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  NO_SHOW
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  CAPTURED
+  FAILED
+}
+
+enum PlanType {
+  SUBSCRIPTION
+  COMMISSION
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  EXPIRED
+}
+
+enum InvoiceType {
+  SUBSCRIPTION
+  COMMISSION
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum CommissionBase {
+  ON_DEPOSIT
+  ON_ALL
+}
+
+enum PetType {
+  DOG
+  CAT
+  BIRD
+  RABBIT
+  OTHER
+}
+
+enum UserRole {
+  CUSTOMER
+  BUSINESS_OWNER
+  ADMIN
+}
+
+// ─── USERS ────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String   @unique
+  password  String
+  role      UserRole @default(CUSTOMER)
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reservations Reservation[]
+  pets         Pet[]
+  businesses   Business[]    @relation("BusinessOwner")
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── BUSINESSES ───────────────────────────────────────────────────────────────
+
+model Business {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  category    Category
+  description String?
+  address     String
+  lat         Float
+  lng         Float
+  phone       String
+  email       String
+
+  coverImage  String?
+  logoUrl     String?
+  images      String[] // ek fotoğraflar
+
+  // Kaparo ayarları
+  requiresDeposit Boolean     @default(false)
+  depositType     DepositType?
+  depositAmount   Float?      // sabit tutar (TL)
+  depositPercent  Float?      // yüzde (0-100)
+
+  // İptal politikası (saat cinsinden)
+  fullRefundBefore Int @default(24) // 24 saat öncesine kadar tam iade
+  halfRefundBefore Int @default(12) // 12 saat öncesine kadar yarı iade
+
+  isActive  Boolean  @default(true)
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner        User                 @relation("BusinessOwner", fields: [ownerId], references: [id])
+  hours        BusinessHour[]
+  slots        TimeSlot[]
+  reservations Reservation[]
+  subscription BusinessSubscription?
+
+  @@index([category])
+  @@index([slug])
+}
+
+model BusinessHour {
+  id         String  @id @default(cuid())
+  businessId String
+  dayOfWeek  Int     // 0=Pazartesi ... 6=Pazar
+  openTime   String  // "09:00"
+  closeTime  String  // "22:00"
+  isClosed   Boolean @default(false)
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, dayOfWeek])
+}
+
+// ─── TIME SLOTS ───────────────────────────────────────────────────────────────
+
+model TimeSlot {
+  id         String   @id @default(cuid())
+  businessId String
+  date       DateTime @db.Date
+  startTime  String   // "14:00"
+  endTime    String   // "14:30"
+  capacity   Int      @default(1)
+  booked     Int      @default(0)
+  isBlocked  Boolean  @default(false) // işletme manuel kapattı
+
+  business     Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+
+  @@index([businessId, date])
+}
+
+// ─── RESERVATIONS ─────────────────────────────────────────────────────────────
+
+model Reservation {
+  id         String            @id @default(cuid())
+  userId     String
+  businessId String
+  slotId     String
+  status     ReservationStatus @default(PENDING)
+  notes      String?
+  petId      String?           // veteriner rezervasyonları için
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id])
+  business Business @relation(fields: [businessId], references: [id])
+  slot     TimeSlot @relation(fields: [slotId], references: [id])
+  pet      Pet?     @relation(fields: [petId], references: [id])
+  payment  Payment?
+
+  @@index([userId])
+  @@index([businessId])
+  @@index([slotId])
+}
+
+// ─── PAYMENTS (Kaparo) ────────────────────────────────────────────────────────
+
+model Payment {
+  id            String        @id @default(cuid())
+  reservationId String        @unique
+  amount        Float
+  status        PaymentStatus @default(PENDING)
+  provider      String        @default("iyzico")
+  transactionId String?
+  refundedAt    DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  reservation Reservation @relation(fields: [reservationId], references: [id])
+}
+
+// ─── PETS (Veteriner) ─────────────────────────────────────────────────────────
+
+model Pet {
+  id        String  @id @default(cuid())
+  userId    String
+  name      String
+  type      PetType
+  breed     String?
+  age       Int?
+  weight    Float?  // kg
+  notes     String? // sağlık notları
+
+  // 16x16 piksel art — her hücre hex renk kodu
+  // Örn: ["#ffffff", "#ff0000", ...] 256 eleman
+  pixelArt  Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+}
+
+// ─── MONETIZATION ─────────────────────────────────────────────────────────────
+
+model SubscriptionPlan {
+  id          String   @id @default(cuid())
+  name        String   // "Starter" | "Pro" | "Enterprise"
+  type        PlanType
+  description String?
+
+  // Abonelik paketi için
+  monthlyPrice Float?
+  yearlyPrice  Float?
+
+  // Komisyon paketi için
+  commissionRate Float?         // 0.08 = %8
+  commissionBase CommissionBase? // ON_DEPOSIT | ON_ALL
+
+  features  String[] // ["Sınırsız rezervasyon", "Öncelikli listeleme"]
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  subscriptions BusinessSubscription[]
+}
+
+model BusinessSubscription {
+  id         String             @id @default(cuid())
+  businessId String             @unique
+  planId     String
+  status     SubscriptionStatus @default(TRIAL)
+
+  billingCycle BillingCycle?
+  startDate    DateTime
+  endDate      DateTime?
+  trialEndDate DateTime?
+
+  // Komisyon istatistikleri
+  totalRevenue Float @default(0) // işletmenin toplam kaparodan geliri
+  totalFee     Float @default(0) // rezerv'e ödenen toplam komisyon
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business Business         @relation(fields: [businessId], references: [id])
+  plan     SubscriptionPlan @relation(fields: [planId], references: [id])
+  invoices Invoice[]
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  subscriptionId String
+  amount         Float
+  type           InvoiceType
+  status         InvoiceStatus @default(PENDING)
+  description    String?
+  dueDate        DateTime
+  paidAt         DateTime?
+  createdAt      DateTime      @default(now())
+
+  subscription BusinessSubscription @relation(fields: [subscriptionId], references: [id])
+}
+
+model CommissionTransaction {
+  id             String   @id @default(cuid())
+  businessId     String
+  reservationId  String   @unique
+  grossAmount    Float    // kaparo tutarı
+  commissionRate Float    // ör: 0.08
+  commissionFee  Float    // kesilen tutar
+  netAmount      Float    // işletmeye kalan
+  createdAt      DateTime @default(now())
+
+  @@index([businessId])
+}
