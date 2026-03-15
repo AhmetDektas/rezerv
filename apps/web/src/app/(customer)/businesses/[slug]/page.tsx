@@ -3,10 +3,11 @@ import { BusinessInfo } from '@/components/business/business-info'
 import { SlotPicker } from '@/components/business/slot-picker'
 import { api } from '@/lib/api'
 
-type Props = { params: { slug: string } }
+type Props = { params: Promise<{ slug: string }> }
 
 export default async function BusinessPage({ params }: Props) {
-  const { data: business } = await api.get<{ data: any }>(`/api/businesses/${params.slug}`)
+  const { slug } = await params
+  const { data: business } = await api.get<{ data: any }>(`/api/businesses/${slug}`)
 
   return (
     <div className="max-w-2xl mx-auto space-y-0">
@@ -25,7 +26,8 @@ export default async function BusinessPage({ params }: Props) {
 
 export async function generateMetadata({ params }: Props) {
   try {
-    const { data: business } = await api.get<{ data: any }>(`/api/businesses/${params.slug}`)
+    const { slug } = await params
+    const { data: business } = await api.get<{ data: any }>(`/api/businesses/${slug}`)
     return {
       title: business.name,
       description: business.description,
