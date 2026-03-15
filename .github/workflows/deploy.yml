@@ -22,8 +22,7 @@ jobs:
           script: |
             cd /opt/rezerv
             git pull origin main
-            docker compose build --no-cache api
-            docker compose up -d --force-recreate api
-            docker compose exec -T api npx prisma migrate deploy || true
-            docker compose exec -T nginx nginx -s reload || true
+            docker compose build --no-cache api web
+            docker compose up -d --force-recreate api web
+            docker compose exec -T api node /app/node_modules/.bin/prisma db push --skip-generate || true
             echo "Deploy tamamlandı: $(date)"
