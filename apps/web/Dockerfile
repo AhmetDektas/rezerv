@@ -37,4 +37,5 @@ ENV PORT=3000
 
 EXPOSE 3000
 
-CMD ["pnpm", "--filter", "@rezerv/web", "start"]
+WORKDIR /app/apps/web
+CMD ["node", "/app/node_modules/.bin/next", "start"]
