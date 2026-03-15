@@ -27,7 +27,7 @@ COPY apps/web/ ./apps/web/
 RUN pnpm --filter @rezerv/web build
 
 # Güvenlik: root olmayan kullanıcı
-RUN groupadd -r rezerv && useradd -r -g rezerv rezerv && \
+RUN groupadd -r rezerv && useradd -r -g rezerv -m rezerv && \
     chown -R rezerv:rezerv /app
 
 USER rezerv
