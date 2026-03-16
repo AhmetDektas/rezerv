@@ -37,6 +37,8 @@ export function SlotPicker({ business }: Props) {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
   const [weekOffset, setWeekOffset] = useState(0)
+  const [successMsg, setSuccessMsg] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
 
   const dateStr = format(selectedDate, 'yyyy-MM-dd')
 
@@ -57,10 +59,12 @@ export function SlotPicker({ business }: Props) {
       ),
     onSuccess: () => {
       setSelectedSlot(null)
-      alert('Rezervasyonunuz oluşturuldu!')
+      setErrorMsg('')
+      setSuccessMsg('Rezervasyonunuz başarıyla oluşturuldu! 🎉')
+      setTimeout(() => setSuccessMsg(''), 5000)
     },
     onError: (err: Error) => {
-      alert(err.message)
+      setErrorMsg(err.message || 'Rezervasyon oluşturulamadı')
     },
   })
 
@@ -161,6 +165,19 @@ export function SlotPicker({ business }: Props) {
           </div>
         )}
       </div>
+
+      {/* Başarı / Hata Mesajı */}
+      {successMsg && (
+        <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-center gap-2">
+          <span className="text-green-600 text-sm font-medium">{successMsg}</span>
+        </div>
+      )}
+      {errorMsg && (
+        <div className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3 flex items-center justify-between gap-2">
+          <span className="text-red-600 text-sm">{errorMsg}</span>
+          <button onClick={() => setErrorMsg('')} className="text-red-400 hover:text-red-600 text-xs font-bold shrink-0">✕</button>
+        </div>
+      )}
 
       {/* Rezervasyon Özeti ve Butonu */}
       {selectedSlot && (

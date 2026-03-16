@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Home, Calendar, User, MapPin } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { Home, Calendar, User, MapPin, LogOut, LogIn } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuthStore } from '@/store/auth'
 
 const navItems = [
   { href: '/', label: 'Ana Sayfa', icon: Home },
@@ -13,10 +14,17 @@ const navItems = [
 
 export function CustomerNav() {
   const pathname = usePathname()
+  const router = useRouter()
+  const { user, logout } = useAuthStore()
+
+  function handleLogout() {
+    logout()
+    router.push('/')
+  }
 
   return (
     <>
-      {/* Desktop üst nav — koyu mor Getir tarzı */}
+      {/* Desktop üst nav */}
       <header className="hidden sm:flex items-center justify-between px-6 h-14 sticky top-0 z-50" style={{ backgroundColor: '#4c3398' }}>
         <Link href="/" className="flex items-center gap-2">
           <span className="text-xl font-bold text-white tracking-tight">
@@ -43,6 +51,27 @@ export function CustomerNav() {
               {item.label}
             </Link>
           ))}
+          {user ? (
+            <div className="flex items-center gap-2 ml-2 pl-2 border-l border-white/20">
+              <span className="text-sm text-white/80">{user.name.split(' ')[0]}</span>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Çıkış
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/auth/login"
+              className="flex items-center gap-1.5 px-4 py-2 ml-2 rounded-xl text-sm font-bold transition-colors"
+              style={{ backgroundColor: '#ffd300', color: '#4c3398' }}
+            >
+              <LogIn className="w-4 h-4" />
+              Giriş Yap
+            </Link>
+          )}
         </nav>
       </header>
 
@@ -51,9 +80,20 @@ export function CustomerNav() {
         <Link href="/" className="text-lg font-bold text-white">
           Rezerv<span style={{ color: '#ffd300' }}>.</span>
         </Link>
-        <div className="flex items-center gap-1 text-xs text-white/80">
-          <MapPin className="w-3.5 h-3.5" />
-          <span className="font-semibold text-white">İstanbul</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 text-xs text-white/80">
+            <MapPin className="w-3.5 h-3.5" />
+            <span className="font-semibold text-white">İstanbul</span>
+          </div>
+          {user ? (
+            <button onClick={handleLogout} className="text-white/70 p-1 ml-1">
+              <LogOut className="w-4 h-4" />
+            </button>
+          ) : (
+            <Link href="/auth/login" className="text-xs font-bold px-2.5 py-1 rounded-lg ml-1" style={{ backgroundColor: '#ffd300', color: '#4c3398' }}>
+              Giriş
+            </Link>
+          )}
         </div>
       </header>
 
@@ -68,14 +108,8 @@ export function CustomerNav() {
                 href={item.href}
                 className="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors"
               >
-                <item.icon
-                  className="w-5 h-5"
-                  style={{ color: isActive ? '#5d3ebc' : '#a2a2a2' }}
-                />
-                <span
-                  className="text-xs font-semibold"
-                  style={{ color: isActive ? '#5d3ebc' : '#a2a2a2' }}
-                >
+                <item.icon className="w-5 h-5" style={{ color: isActive ? '#5d3ebc' : '#a2a2a2' }} />
+                <span className="text-xs font-semibold" style={{ color: isActive ? '#5d3ebc' : '#a2a2a2' }}>
                   {item.label}
                 </span>
               </Link>

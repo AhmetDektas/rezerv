@@ -507,6 +507,31 @@ dashboardRoutes.delete('/service-categories/:id', async (c) => {
   return c.json({ data: { message: 'Kategori silindi' } })
 })
 
+// ─── Reservation helper ───────────────────────────────────────────────────────
+
+function fmtReservation(r: {
+  id: string; status: string; notes: string | null; createdAt: Date
+  user: { id: string; name: string; phone: string; email: string } | null
+  slot: { id: string; startTime: string; endTime: string; date: Date }
+  payment: { amount: number; status: string } | null
+}) {
+  const d = new Date(r.slot.date)
+  const dateStr = d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' })
+  return {
+    id: r.id,
+    status: r.status,
+    notes: r.notes,
+    createdAt: r.createdAt,
+    customerName: r.user?.name ?? 'Bilinmeyen',
+    customerPhone: r.user?.phone,
+    customerEmail: r.user?.email,
+    date: dateStr,
+    time: r.slot.startTime,
+    endTime: r.slot.endTime,
+    totalPrice: r.payment?.amount ?? null,
+  }
+}
+
 // ─── Reservations ─────────────────────────────────────────────────────────────
 
 dashboardRoutes.get('/reservations', async (c) => {
@@ -547,7 +572,7 @@ dashboardRoutes.get('/reservations', async (c) => {
 
   return c.json({
     data: {
-      reservations,
+      reservations: reservations.map(fmtReservation),
       meta: { total, page, limit, pages: Math.ceil(total / limit) },
     },
   })
@@ -574,7 +599,7 @@ dashboardRoutes.get('/reservations/today', async (c) => {
     orderBy: { slot: { startTime: 'asc' } },
   })
 
-  return c.json({ data: { reservations } })
+  return c.json({ data: { reservations: reservations.map(fmtReservation) } })
 })
 
 dashboardRoutes.patch(
