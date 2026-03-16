@@ -83,6 +83,11 @@ businessRoutes.get('/:slug', async (c) => {
     include: {
       hours: { orderBy: { dayOfWeek: 'asc' } },
       owner: { select: { name: true } },
+      services: {
+        where: { isActive: true },
+        orderBy: { price: 'asc' },
+        select: { id: true, name: true, description: true, price: true, duration: true },
+      },
     },
   })
 

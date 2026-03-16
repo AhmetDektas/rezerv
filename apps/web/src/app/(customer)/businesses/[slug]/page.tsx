@@ -2,12 +2,23 @@ import { BusinessMap } from '@/components/business/business-map'
 import { BusinessInfo } from '@/components/business/business-info'
 import { SlotPicker } from '@/components/business/slot-picker'
 import { api } from '@/lib/api'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
 
 type Props = { params: Promise<{ slug: string }> }
 
 export default async function BusinessPage({ params }: Props) {
   const { slug } = await params
-  const { data: business } = await api.get<{ data: any }>(`/api/businesses/${slug}`)
+
+  let business: any
+  try {
+    const res = await api.get<{ data: any }>(`/api/businesses/${slug}`)
+    business = res.data
+  } catch {
+    notFound()
+  }
+
+  if (!business) notFound()
 
   return (
     <div className="max-w-2xl mx-auto space-y-0">
