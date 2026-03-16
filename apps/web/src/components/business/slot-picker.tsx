@@ -126,9 +126,10 @@ export function SlotPicker({ business }: Props) {
                 className={cn(
                   'flex flex-col items-center py-2 rounded-xl text-xs transition-colors',
                   isSelected
-                    ? 'bg-blue-600 text-white font-semibold'
+                    ? 'text-white font-semibold'
                     : 'hover:bg-gray-100 text-gray-600'
                 )}
+                style={isSelected ? { backgroundColor: '#5d3ebc' } : {}}
               >
                 <span className="uppercase">{format(day, 'EEE', { locale: tr })}</span>
                 <span className="text-base font-bold mt-0.5">{format(day, 'd')}</span>
@@ -165,13 +166,14 @@ export function SlotPicker({ business }: Props) {
                     slot.isFull
                       ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
                       : isSelected
-                        ? 'border-blue-600 bg-blue-600 text-white shadow-md'
-                        : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50 text-gray-700'
+                        ? 'text-white shadow-md border-transparent'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-purple-300 hover:bg-purple-50'
                   )}
+                  style={!slot.isFull && isSelected ? { backgroundColor: '#5d3ebc' } : {}}
                 >
                   <span>{slot.startTime}</span>
                   {!slot.isFull && slot.capacity > 1 && (
-                    <span className={cn('text-xs mt-0.5', isSelected ? 'text-blue-100' : 'text-gray-400')}>
+                    <span className={cn('text-xs mt-0.5', isSelected ? 'text-purple-100' : 'text-gray-400')}>
                       {slot.available} yer
                     </span>
                   )}
@@ -236,7 +238,7 @@ export function SlotPicker({ business }: Props) {
 
       {/* Rezervasyon Özeti ve Butonu */}
       {selectedSlot && (
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 space-y-3">
+        <div className="rounded-2xl p-4 space-y-3" style={{ backgroundColor: '#f3f0fe', border: '1px solid #e0d9fc' }}>
           <div className="text-sm space-y-1 text-gray-700">
             <div className="flex justify-between">
               <span className="text-gray-500">Tarih</span>
@@ -273,7 +275,8 @@ export function SlotPicker({ business }: Props) {
               reserveMutation.mutate(selectedSlot.id)
             }}
             disabled={reserveMutation.isPending}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-60"
+            className="w-full text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-60"
+            style={{ backgroundColor: '#5d3ebc' }}
           >
             {reserveMutation.isPending
               ? 'İşleniyor...'

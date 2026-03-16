@@ -191,6 +191,42 @@ authRoutes.get('/me', authMiddleware, async (c) => {
   return c.json({ data: user })
 })
 
+// ─── Profil Güncelle ──────────────────────────────────────────────────────────
+authRoutes.patch(
+  '/profile',
+  authMiddleware,
+  zValidator(
+    'json',
+    z.object({
+      name: z.string().min(2).optional(),
+      phone: z.string().min(10).optional(),
+    })
+  ),
+  async (c) => {
+    const { userId } = c.get('user')
+    const body = c.req.valid('json')
+
+    if (!body.name && !body.phone) {
+      return c.json({ error: 'En az bir alan gerekli' }, 400)
+    }
+
+    if (body.phone) {
+      const existing = await prisma.user.findFirst({
+        where: { phone: body.phone, id: { not: userId } },
+      })
+      if (existing) return c.json({ error: 'Bu telefon numarası zaten kullanılıyor' }, 409)
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { ...(body.name && { name: body.name }), ...(body.phone && { phone: body.phone }) },
+      select: { id: true, name: true, email: true, phone: true, role: true, avatarUrl: true },
+    })
+
+    return c.json({ data: user })
+  }
+)
+
 // ─── Şifre Güncelle ───────────────────────────────────────────────────────────
 authRoutes.patch(
   '/password',
