@@ -75,12 +75,12 @@ export function BusinessInfo({ business }: Props) {
         )}
       </div>
 
-      {/* Kaparo bilgisi */}
+      {/* Kapora bilgisi */}
       {business.requiresDeposit && (
         <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
           <Wallet className="w-4 h-4 text-amber-600 shrink-0" />
           <div className="text-sm">
-            <span className="font-semibold text-amber-800">Kaparo gerekli: </span>
+            <span className="font-semibold text-amber-800">Kapora gerekli: </span>
             <span className="text-amber-700">
               {business.depositType === 'FIXED' && business.depositAmount
                 ? formatCurrency(business.depositAmount)

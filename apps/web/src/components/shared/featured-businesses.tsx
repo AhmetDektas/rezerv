@@ -77,8 +77,8 @@ export async function FeaturedBusinesses() {
                       {b.depositType === 'FIXED' && b.depositAmount
                         ? formatCurrency(b.depositAmount)
                         : b.depositType === 'PERCENTAGE' && b.depositPercent
-                          ? `%${b.depositPercent} kaparo`
-                          : 'Kaparo'}
+                          ? `%${b.depositPercent} kapora`
+                          : 'Kapora'}
                     </span>
                   </div>
                 )}

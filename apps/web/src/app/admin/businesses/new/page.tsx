@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+
 import { ArrowLeft, Check, Plus, X } from 'lucide-react'
 
 const API = process.env.NEXT_PUBLIC_API_URL
@@ -55,8 +55,10 @@ function ImageUrlField({
         className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition-colors text-gray-900"
       />
       {value && (
-        <div className="mt-2 relative h-24 rounded-xl overflow-hidden bg-gray-100">
-          <Image src={value} alt="önizleme" fill className="object-cover" sizes="672px" />
+        <div className="mt-2 h-24 rounded-xl overflow-hidden bg-gray-100">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={value} alt="önizleme" className="w-full h-full object-cover"
+            onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none' }} />
         </div>
       )}
     </div>
@@ -206,9 +208,9 @@ export default function NewBusinessPage() {
           </div>
         </div>
 
-        {/* Kaparo Ayarları */}
+        {/* Kapora Ayarları */}
         <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-4">
-          <h3 className="font-semibold text-sm text-gray-700">Kaparo Ayarları</h3>
+          <h3 className="font-semibold text-sm text-gray-700">Kapora Ayarları</h3>
 
           <label className="flex items-center gap-3 cursor-pointer select-none">
             <div
@@ -218,7 +220,7 @@ export default function NewBusinessPage() {
               <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.requiresDeposit ? 'translate-x-6' : 'translate-x-1'}`} />
             </div>
             <div>
-              <div className="text-sm font-semibold text-gray-700">Kaparo al</div>
+              <div className="text-sm font-semibold text-gray-700">Kapora al</div>
               <div className="text-xs text-gray-400">Rezervasyon onayı için ön ödeme istenir</div>
             </div>
           </label>
@@ -226,7 +228,7 @@ export default function NewBusinessPage() {
           {form.requiresDeposit && (
             <div className="space-y-3 pl-2 border-l-2 border-purple-100">
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-gray-500">Kaparo Türü</label>
+                <label className="block text-xs font-semibold mb-1.5 text-gray-500">Kapora Türü</label>
                 <div className="flex gap-2">
                   {[
                     { value: 'FIXED', label: 'Sabit Tutar (₺)' },
@@ -250,7 +252,7 @@ export default function NewBusinessPage() {
 
               {form.depositType === 'FIXED' ? (
                 <Field
-                  label="Kaparo Tutarı (₺)"
+                  label="Kapora Tutarı (₺)"
                   value={form.depositAmount}
                   onChange={(v) => set('depositAmount', v)}
                   type="number"
@@ -258,7 +260,7 @@ export default function NewBusinessPage() {
                 />
               ) : (
                 <Field
-                  label="Kaparo Oranı (%)"
+                  label="Kapora Oranı (%)"
                   value={form.depositPercent}
                   onChange={(v) => set('depositPercent', v)}
                   type="number"

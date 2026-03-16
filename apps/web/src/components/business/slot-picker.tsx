@@ -180,7 +180,7 @@ export function SlotPicker({ business }: Props) {
             </div>
             {business.requiresDeposit && (
               <div className="flex justify-between">
-                <span className="text-gray-500">Kaparo</span>
+                <span className="text-gray-500">Kapora</span>
                 <span className="font-semibold text-amber-700">
                   {business.depositType === 'FIXED' && business.depositAmount
                     ? formatCurrency(business.depositAmount)
@@ -206,7 +206,7 @@ export function SlotPicker({ business }: Props) {
             {reserveMutation.isPending
               ? 'İşleniyor...'
               : business.requiresDeposit
-                ? 'Kaparo Öde ve Rezerve Et'
+                ? 'Kapora Öde ve Rezerve Et'
                 : 'Rezervasyonu Onayla'}
           </button>
         </div>
