@@ -83,6 +83,10 @@ adminRoutes.post(
       lng: z.number(),
       phone: z.string().min(10),
       email: z.string().email(),
+      // Görseller
+      coverImage: z.string().url().optional(),
+      logoUrl: z.string().url().optional(),
+      images: z.array(z.string().url()).optional(),
       // İşletme sahibi (opsiyonel — verilirse kullanıcı oluşturulur/bulunur)
       ownerName: z.string().min(2).optional(),
       ownerEmail: z.string().email().optional(),
@@ -158,6 +162,9 @@ adminRoutes.post(
         lng: body.lng,
         phone: body.phone,
         email: body.email,
+        coverImage: body.coverImage,
+        logoUrl: body.logoUrl,
+        images: body.images ?? [],
         ownerId,
       },
       include: {
@@ -193,6 +200,9 @@ adminRoutes.patch(
       lng: z.number().optional(),
       phone: z.string().optional(),
       email: z.string().email().optional(),
+      coverImage: z.string().url().optional().nullable(),
+      logoUrl: z.string().url().optional().nullable(),
+      images: z.array(z.string().url()).optional(),
       isActive: z.boolean().optional(),
       requiresDeposit: z.boolean().optional(),
       depositType: z.enum(['FIXED', 'PERCENTAGE']).optional(),
