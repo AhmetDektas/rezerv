@@ -142,7 +142,7 @@ export default function DashboardPage() {
           </div>
           <div>
             <div className="text-2xl font-bold text-foreground">
-              {overview ? `₺${overview.totalRevenue.toLocaleString('tr-TR')}` : '—'}
+              {overview?.totalRevenue != null ? `₺${overview.totalRevenue.toLocaleString('tr-TR')}` : '—'}
             </div>
             <div className="text-xs text-muted-foreground">Toplam Gelir</div>
           </div>

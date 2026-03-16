@@ -546,8 +546,10 @@ dashboardRoutes.get('/reservations', async (c) => {
   ])
 
   return c.json({
-    data: reservations,
-    meta: { total, page, limit, pages: Math.ceil(total / limit) },
+    data: {
+      reservations,
+      meta: { total, page, limit, pages: Math.ceil(total / limit) },
+    },
   })
 })
 
@@ -572,7 +574,7 @@ dashboardRoutes.get('/reservations/today', async (c) => {
     orderBy: { slot: { startTime: 'asc' } },
   })
 
-  return c.json({ data: reservations })
+  return c.json({ data: { reservations } })
 })
 
 dashboardRoutes.patch(
@@ -988,7 +990,7 @@ dashboardRoutes.get('/reports/overview', async (c) => {
       confirmedReservations,
       cancelledReservations,
       completedReservations,
-      revenue: revenueResult._sum.amount ?? 0,
+      totalRevenue: revenueResult._sum.amount ?? 0,
     },
   })
 })

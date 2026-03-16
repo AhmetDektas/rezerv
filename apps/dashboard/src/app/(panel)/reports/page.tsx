@@ -150,7 +150,7 @@ export default function ReportsPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold text-foreground">
-                  ₺{data.totalRevenue.toLocaleString('tr-TR')}
+                  ₺{(data.totalRevenue ?? 0).toLocaleString('tr-TR')}
                 </div>
                 <div className="text-xs text-muted-foreground">Toplam Gelir</div>
               </div>
