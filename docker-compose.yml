@@ -35,7 +35,8 @@ services:
       PORT: 4000
       DATABASE_URL: postgresql://${POSTGRES_USER:-rezerv}:${POSTGRES_PASSWORD}@postgres:5432/rezerv
       JWT_SECRET: ${JWT_SECRET:?JWT secret gerekli}
-      WEB_URL: http://89.167.19.1:3000
+      WEB_URL: http://89.167.19.1:3001
+      ADMIN_SECRET: ${ADMIN_SECRET:-}
       IYZICO_API_KEY: ${IYZICO_API_KEY:-}
       IYZICO_SECRET_KEY: ${IYZICO_SECRET_KEY:-}
       IYZICO_BASE_URL: ${IYZICO_BASE_URL:-https://sandbox-api.iyzipay.com}
