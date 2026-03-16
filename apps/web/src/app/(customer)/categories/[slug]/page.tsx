@@ -24,6 +24,10 @@ type Business = {
   address: string
   coverImage: string | null
   logoUrl: string | null
+  requiresDeposit: boolean
+  depositType: string | null
+  depositAmount: number | null
+  depositPercent: number | null
 }
 
 type Props = { params: Promise<{ slug: string }> }
@@ -38,6 +42,24 @@ async function getBusinesses(category: string): Promise<Business[]> {
   } catch {
     return []
   }
+}
+
+function DepositBadge({ biz }: { biz: Business }) {
+  if (!biz.requiresDeposit) return null
+
+  let label = 'Kaparo'
+  if (biz.depositType === 'FIXED' && biz.depositAmount) {
+    label = `Kaparo ₺${biz.depositAmount}`
+  } else if (biz.depositType === 'PERCENTAGE' && biz.depositPercent) {
+    label = `Kaparo %${biz.depositPercent}`
+  }
+
+  return (
+    <span className="absolute bottom-2 left-2 flex items-center gap-1 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+      <span className="w-1.5 h-1.5 bg-white rounded-full opacity-80" />
+      {label}
+    </span>
+  )
 }
 
 export default async function CategoryPage({ params }: Props) {
@@ -102,12 +124,16 @@ export default async function CategoryPage({ params }: Props) {
                     {meta.emoji}
                   </div>
                 )}
+
                 {/* Logo overlay */}
                 {biz.logoUrl && (
-                  <div className="absolute bottom-2 left-3 w-10 h-10 rounded-xl bg-white shadow overflow-hidden">
-                    <Image src={biz.logoUrl} alt={`${biz.name} logo`} fill className="object-cover" sizes="40px" />
+                  <div className="absolute bottom-2 right-2 w-9 h-9 rounded-xl bg-white shadow overflow-hidden border border-white">
+                    <Image src={biz.logoUrl} alt={`${biz.name} logo`} fill className="object-cover" sizes="36px" />
                   </div>
                 )}
+
+                {/* Kaparo badge — sol alt */}
+                <DepositBadge biz={biz} />
               </div>
 
               <div className="p-4">
@@ -115,8 +141,9 @@ export default async function CategoryPage({ params }: Props) {
                 {biz.description && (
                   <p className="text-xs mt-0.5 line-clamp-1" style={{ color: '#6f6f6f' }}>{biz.description}</p>
                 )}
-                <p className="text-xs mt-1 flex items-center gap-1" style={{ color: '#8d8d8d' }}>
-                  <span>📍</span> {biz.address}
+                <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: '#8d8d8d' }}>
+                  <span>📍</span>
+                  <span className="truncate">{biz.address}</span>
                 </p>
                 <div
                   className="mt-3 w-full text-center text-xs font-semibold py-2.5 rounded-xl"
