@@ -45,8 +45,11 @@ const categoryData: Record<string, {
   },
 };
 
-export default function CategoryPage({ params }: { params: { slug: string } }) {
-  const category = categoryData[params.slug];
+type Props = { params: Promise<{ slug: string }> };
+
+export default async function CategoryPage({ params }: Props) {
+  const { slug } = await params;
+  const category = categoryData[slug];
 
   if (!category) {
     return (
@@ -74,7 +77,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
           <Link
             key={biz.id}
             href={`/businesses/${biz.id}`}
-            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:border-blue-200 transition-all"
+            className="block bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:border-blue-200 transition-all"
           >
             <div className="flex items-start justify-between">
               <div>
@@ -86,9 +89,9 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
               </span>
             </div>
             <p className="text-xs text-gray-400 mt-3">{biz.reviewCount} değerlendirme</p>
-            <button className="mt-4 w-full bg-blue-600 text-white text-sm font-medium py-2 rounded-xl hover:bg-blue-700 transition-colors">
+            <div className="mt-4 w-full bg-blue-600 text-white text-sm font-medium py-2 rounded-xl text-center hover:bg-blue-700 transition-colors">
               Rezervasyon Yap
-            </button>
+            </div>
           </Link>
         ))}
       </div>
