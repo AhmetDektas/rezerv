@@ -71,7 +71,7 @@ type FormData = {
   coverImage: string; logoUrl: string
   requiresDeposit: boolean; depositType: string
   depositAmount: string; depositPercent: string
-  ownerName: string; ownerEmail: string; ownerPhone: string
+  ownerName: string; ownerEmail: string; ownerPhone: string; ownerPassword: string
 }
 
 const EMPTY: FormData = {
@@ -80,7 +80,7 @@ const EMPTY: FormData = {
   coverImage: '', logoUrl: '',
   requiresDeposit: false, depositType: 'FIXED',
   depositAmount: '', depositPercent: '',
-  ownerName: '', ownerEmail: '', ownerPhone: '',
+  ownerName: '', ownerEmail: '', ownerPhone: '', ownerPassword: '',
 }
 
 export default function NewBusinessPage() {
@@ -128,6 +128,7 @@ export default function NewBusinessPage() {
       body.ownerEmail = form.ownerEmail
       if (form.ownerName) body.ownerName = form.ownerName
       if (form.ownerPhone) body.ownerPhone = form.ownerPhone
+      if (form.ownerPassword) body.ownerPassword = form.ownerPassword
     }
 
     try {
@@ -332,6 +333,7 @@ export default function NewBusinessPage() {
           <Field label="Sahip Adı" value={form.ownerName} onChange={(v) => set('ownerName', v)} placeholder="Ad Soyad" />
           <Field label="Sahip E-postası" value={form.ownerEmail} onChange={(v) => set('ownerEmail', v)} type="email" placeholder="sahip@email.com" />
           <Field label="Sahip Telefonu" value={form.ownerPhone} onChange={(v) => set('ownerPhone', v)} placeholder="05XX XXX XX XX" />
+          <Field label="İşletme Paneli Şifresi" value={form.ownerPassword} onChange={(v) => set('ownerPassword', v)} type="password" placeholder="Boş bırakırsanız rastgele oluşturulur" />
         </div>
 
         {error && (

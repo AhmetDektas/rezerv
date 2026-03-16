@@ -91,6 +91,7 @@ adminRoutes.post(
       ownerName: z.string().min(2).optional(),
       ownerEmail: z.string().email().optional(),
       ownerPhone: z.string().min(10).optional(),
+      ownerPassword: z.string().min(6).optional(),
     })
   ),
   async (c) => {
@@ -108,8 +109,8 @@ adminRoutes.post(
       let owner = await prisma.user.findUnique({ where: { email: body.ownerEmail } })
 
       if (!owner) {
-        const tempPassword = Math.random().toString(36).slice(-10)
-        const hashedPassword = await bcrypt.hash(tempPassword, 12)
+        const rawPassword = body.ownerPassword ?? Math.random().toString(36).slice(-10)
+        const hashedPassword = await bcrypt.hash(rawPassword, 12)
 
         owner = await prisma.user.create({
           data: {
