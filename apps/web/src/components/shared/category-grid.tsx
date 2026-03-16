@@ -8,16 +8,7 @@ export function CategoryGrid() {
         <Link
           key={cat.id}
           href={`/categories/${cat.id.toLowerCase()}`}
-          className="flex flex-col items-center gap-2 p-4 bg-white rounded-2xl cursor-pointer transition-all group"
-          style={{
-            boxShadow: 'rgba(93, 62, 188, 0.04) 0px 6px 24px 0px',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.boxShadow = 'rgba(93, 62, 188, 0.12) 0px 8px 32px 0px'
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.boxShadow = 'rgba(93, 62, 188, 0.04) 0px 6px 24px 0px'
-          }}
+          className="flex flex-col items-center gap-2 p-4 bg-white rounded-2xl card-shadow"
         >
           <span className="text-3xl">{cat.emoji}</span>
           <div className="text-center">

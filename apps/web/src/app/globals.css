@@ -64,8 +64,9 @@
 @layer utilities {
   .card-shadow {
     box-shadow: rgba(93, 62, 188, 0.04) 0px 6px 24px 0px;
+    transition: box-shadow 0.2s ease;
   }
-  .card-shadow-hover {
+  .card-shadow:hover {
     box-shadow: rgba(93, 62, 188, 0.12) 0px 8px 32px 0px;
   }
 }

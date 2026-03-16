@@ -27,8 +27,7 @@ export default function MyBookingsPage() {
             return (
               <div
                 key={b.id}
-                className="bg-white rounded-2xl p-4 flex items-center justify-between"
-                style={{ boxShadow: 'rgba(93, 62, 188, 0.04) 0px 6px 24px 0px' }}
+                className="bg-white rounded-2xl p-4 flex items-center justify-between card-shadow"
               >
                 <div className="flex items-center gap-3">
                   <div

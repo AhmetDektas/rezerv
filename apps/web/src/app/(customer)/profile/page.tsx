@@ -15,7 +15,7 @@ export default function ProfilePage() {
       <h1 className="text-xl font-bold" style={{ color: '#191919' }}>Profilim</h1>
 
       {/* Avatar Kartı */}
-      <div className="bg-white rounded-2xl p-5" style={{ boxShadow: 'rgba(93, 62, 188, 0.04) 0px 6px 24px 0px' }}>
+      <div className="bg-white rounded-2xl p-5" className="card-shadow">
         <div className="flex items-center gap-4">
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white"
@@ -40,7 +40,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Bilgi Kartı */}
-      <div className="bg-white rounded-2xl p-5 space-y-4" style={{ boxShadow: 'rgba(93, 62, 188, 0.04) 0px 6px 24px 0px' }}>
+      <div className="bg-white rounded-2xl p-5 space-y-4" className="card-shadow">
         {isEditing ? (
           <>
             {[

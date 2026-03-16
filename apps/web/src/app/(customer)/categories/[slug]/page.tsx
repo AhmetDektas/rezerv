@@ -69,8 +69,7 @@ export default async function CategoryPage({ params }: Props) {
           <Link
             key={biz.id}
             href={`/businesses/${biz.id}`}
-            className="block bg-white rounded-2xl overflow-hidden transition-all"
-            style={{ boxShadow: 'rgba(93, 62, 188, 0.04) 0px 6px 24px 0px' }}
+            className="block bg-white rounded-2xl overflow-hidden card-shadow"
           >
             {/* Placeholder görseli */}
             <div className="h-28 flex items-center justify-center text-4xl opacity-30" style={{ backgroundColor: '#f3f0fe' }}>

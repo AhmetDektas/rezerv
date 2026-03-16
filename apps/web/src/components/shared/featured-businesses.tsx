@@ -37,7 +37,7 @@ export async function FeaturedBusinesses() {
             key={b.id}
             href={`/businesses/${b.slug}`}
             className="bg-white rounded-2xl overflow-hidden block transition-all"
-            style={{ boxShadow: 'rgba(93, 62, 188, 0.04) 0px 6px 24px 0px' }}
+            className="card-shadow"
           >
             {/* Kapak Görseli */}
             <div className="h-32 relative overflow-hidden" style={{ backgroundColor: '#f3f0fe' }}>
