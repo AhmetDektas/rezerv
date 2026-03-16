@@ -208,6 +208,42 @@ async function main() {
   }
 
   console.log('✓ Zaman slotları oluşturuldu')
+
+  // ── Services ────────────────────────────────────────────────────────────────
+
+  const servicesData = [
+    // Erkek Berber
+    { businessId: 'biz_berber_1', name: 'Saç Kesimi', description: 'Klasik veya modern saç kesimi', price: 150, duration: 30, isActive: true },
+    { businessId: 'biz_berber_1', name: 'Sakal Tıraşı', description: 'Bıçak ile geleneksel sakal tıraşı', price: 100, duration: 20, isActive: true },
+    { businessId: 'biz_berber_1', name: 'Saç + Sakal', description: 'Saç kesimi ve sakal tıraşı kombine', price: 220, duration: 50, isActive: true },
+    { businessId: 'biz_berber_1', name: 'Cilt Bakımı', description: 'Yüz temizliği ve nem maskesi', price: 250, duration: 45, isActive: true },
+    // Lux Spa
+    { businessId: 'biz_spa_1', name: 'İsveç Masajı', description: 'Rahatlatıcı tam vücut masajı', price: 400, duration: 60, isActive: true },
+    { businessId: 'biz_spa_1', name: 'Derin Doku Masajı', description: 'Kas gerginliği için yoğun masaj', price: 500, duration: 60, isActive: true },
+    { businessId: 'biz_spa_1', name: 'Hamam & Kese', description: 'Geleneksel Türk hamamı deneyimi', price: 350, duration: 90, isActive: true },
+    { businessId: 'biz_spa_1', name: 'Yüz Bakımı', description: 'Cilt yenileme ve nem tedavisi', price: 450, duration: 75, isActive: true },
+    // FitLife Spor
+    { businessId: 'biz_fit_1', name: 'Kişisel Antrenör (1 Saat)', description: 'Bire bir antrenman seansı', price: 300, duration: 60, isActive: true },
+    { businessId: 'biz_fit_1', name: 'Grup Dersi - Yoga', description: 'Sabah yoga seansı (maks. 10 kişi)', price: 120, duration: 60, isActive: true },
+    { businessId: 'biz_fit_1', name: 'Grup Dersi - Pilates', description: 'Core güçlendirme pilates', price: 130, duration: 60, isActive: true },
+    { businessId: 'biz_fit_1', name: 'Grup Dersi - Spinning', description: 'Yoğun kardiyo spinning', price: 100, duration: 45, isActive: true },
+    // Pati Veteriner
+    { businessId: 'biz_vet_1', name: 'Genel Muayene', description: 'Kapsamlı sağlık kontrolü', price: 200, duration: 30, isActive: true },
+    { businessId: 'biz_vet_1', name: 'Aşılama', description: 'Yıllık rutin aşı uygulaması', price: 150, duration: 20, isActive: true },
+    { businessId: 'biz_vet_1', name: 'Tüy Bakımı & Tıraş', description: 'Köpek veya kedi tıraşı', price: 250, duration: 60, isActive: true },
+    { businessId: 'biz_vet_1', name: 'Diş Bakımı', description: 'Ultrasonik diş taşı temizliği', price: 400, duration: 45, isActive: true },
+    // Mood Cafe
+    { businessId: 'biz_cafe_1', name: 'Kahvaltı Rezervasyonu', description: 'Açık büfe kahvaltı (kişi başı)', price: 250, duration: 90, isActive: true },
+    { businessId: 'biz_cafe_1', name: 'Brunch Paketi', description: 'Özel brunch menüsü (2 kişilik)', price: 600, duration: 120, isActive: true },
+    { businessId: 'biz_cafe_1', name: 'Özel Masa Rezervasyonu', description: 'Doğum günü veya özel gün masası', price: 200, duration: 180, isActive: true },
+  ]
+
+  await prisma.service.deleteMany({
+    where: { businessId: { in: ['biz_berber_1', 'biz_spa_1', 'biz_fit_1', 'biz_vet_1', 'biz_cafe_1'] } },
+  })
+  await prisma.service.createMany({ data: servicesData, skipDuplicates: true })
+
+  console.log('✓ Hizmetler oluşturuldu')
   console.log('\n🎉 Seed tamamlandı!\n')
   console.log('İşletme paneli giriş bilgileri:')
   console.log('  Erkek Berber: mehmet@erkekberber.com / berber123')
