@@ -140,7 +140,10 @@ export default function EditBusinessPage({ params }: { params: Promise<{ id: str
       if (res.status === 401) { router.replace('/admin/login'); return }
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error ?? `Hata: ${res.status}`)
+        const errMsg = typeof data.error === 'string'
+          ? data.error
+          : data.message ?? JSON.stringify(data.error ?? data)
+        setError(errMsg)
       } else {
         setSuccess(true)
         setTimeout(() => router.push('/admin/businesses'), 1500)

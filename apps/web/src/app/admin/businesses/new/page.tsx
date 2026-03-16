@@ -139,7 +139,10 @@ export default function NewBusinessPage() {
       if (res.status === 401) { router.replace('/admin/login'); return }
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error ?? JSON.stringify(data))
+        const errMsg = typeof data.error === 'string'
+          ? data.error
+          : data.message ?? JSON.stringify(data.error ?? data)
+        setError(errMsg)
       } else {
         setSuccess(true)
         setTimeout(() => router.push('/admin/businesses'), 1500)

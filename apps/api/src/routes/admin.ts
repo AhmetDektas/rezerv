@@ -140,7 +140,7 @@ adminRoutes.post(
           data: {
             name: 'Sistem',
             email: 'system@rezerv.app',
-            phone: '05000000000',
+            phone: `0500${Date.now().toString().slice(-7)}`,
             password: await bcrypt.hash(Math.random().toString(36), 12),
             role: 'BUSINESS_OWNER',
           },
