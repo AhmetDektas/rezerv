@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { BusinessCardCover } from './BusinessCard'
 
 const SLUG_TO_CATEGORY: Record<string, string> = {
   food_drink: 'FOOD_DRINK',
@@ -43,13 +44,6 @@ async function getBusinesses(category: string): Promise<Business[]> {
   }
 }
 
-function depositLabel(biz: Business): string | null {
-  if (!biz.requiresDeposit) return null
-  if (biz.depositType === 'FIXED' && biz.depositAmount) return `₺${biz.depositAmount} Kapora`
-  if (biz.depositType === 'PERCENTAGE' && biz.depositPercent) return `%${biz.depositPercent} Kapora`
-  return 'Kapora'
-}
-
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params
   const categoryKey = SLUG_TO_CATEGORY[slug]
@@ -67,7 +61,6 @@ export default async function CategoryPage({ params }: Props) {
   }
 
   const businesses = await getBusinesses(categoryKey)
-  const label = depositLabel
 
   return (
     <div className="space-y-5">
@@ -92,81 +85,33 @@ export default async function CategoryPage({ params }: Props) {
       {/* İşletme Kartları */}
       {businesses.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {businesses.map((biz) => {
-            const badge = label(biz)
-            return (
-              <Link
-                key={biz.id}
-                href={`/businesses/${biz.slug}`}
-                className="block bg-white rounded-2xl overflow-hidden card-shadow"
-              >
-                {/* Kapak Görseli */}
+          {businesses.map((biz) => (
+            <Link
+              key={biz.id}
+              href={`/businesses/${biz.slug}`}
+              className="block bg-white rounded-2xl overflow-hidden card-shadow"
+            >
+              {/* Kapak + Logo + Kapora Badge (Client Component) */}
+              <BusinessCardCover biz={biz} emoji={meta.emoji} />
+
+              <div className="p-4">
+                <h2 className="font-semibold text-sm leading-tight" style={{ color: '#191919' }}>{biz.name}</h2>
+                {biz.description && (
+                  <p className="text-xs mt-0.5 line-clamp-1" style={{ color: '#6f6f6f' }}>{biz.description}</p>
+                )}
+                <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: '#8d8d8d' }}>
+                  <span>📍</span>
+                  <span className="truncate">{biz.address}</span>
+                </p>
                 <div
-                  className="relative h-36 overflow-hidden"
-                  style={{ backgroundColor: '#f3f0fe' }}
+                  className="mt-3 w-full text-center text-xs font-semibold py-2.5 rounded-xl"
+                  style={{ backgroundColor: '#5d3ebc', color: '#ffffff' }}
                 >
-                  {biz.coverImage ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={biz.coverImage}
-                      alt={biz.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none'
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-5xl opacity-20">
-                      {meta.emoji}
-                    </div>
-                  )}
-
-                  {/* Logo — sağ alt */}
-                  {biz.logoUrl && (
-                    <div
-                      className="absolute bottom-2 right-2 w-9 h-9 rounded-xl bg-white shadow overflow-hidden border-2 border-white"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={biz.logoUrl}
-                        alt={`${biz.name} logo`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).parentElement!.style.display = 'none'
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  {/* Kapora badge — sol alt */}
-                  {badge && (
-                    <span className="absolute bottom-2 left-2 flex items-center gap-1 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow"
-                      style={{ backgroundColor: '#16a34a' }}>
-                      <span className="w-1.5 h-1.5 bg-white rounded-full opacity-80" />
-                      {badge}
-                    </span>
-                  )}
+                  Rezervasyon Yap
                 </div>
-
-                <div className="p-4">
-                  <h2 className="font-semibold text-sm leading-tight" style={{ color: '#191919' }}>{biz.name}</h2>
-                  {biz.description && (
-                    <p className="text-xs mt-0.5 line-clamp-1" style={{ color: '#6f6f6f' }}>{biz.description}</p>
-                  )}
-                  <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: '#8d8d8d' }}>
-                    <span>📍</span>
-                    <span className="truncate">{biz.address}</span>
-                  </p>
-                  <div
-                    className="mt-3 w-full text-center text-xs font-semibold py-2.5 rounded-xl"
-                    style={{ backgroundColor: '#5d3ebc', color: '#ffffff' }}
-                  >
-                    Rezervasyon Yap
-                  </div>
-                </div>
-              </Link>
-            )
-          })}
+              </div>
+            </Link>
+          ))}
         </div>
       )}
     </div>
