@@ -1,6 +1,6 @@
 'use client'
 
-import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps'
+import { APIProvider, Map, AdvancedMarker, Pin, useApiLoadingStatus } from '@vis.gl/react-google-maps'
 import { Navigation, MapPin } from 'lucide-react'
 
 type Props = {
@@ -14,28 +14,42 @@ const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ?? ''
 
 export function BusinessMap({ lat, lng, name, address }: Props) {
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address ?? `${lat},${lng}`)}`
-  const position = { lat, lng }
 
   if (!MAPS_KEY) {
     return <MapPlaceholder name={name} googleMapsUrl={googleMapsUrl} />
   }
 
   return (
+    <APIProvider apiKey={MAPS_KEY}>
+      <MapInner lat={lat} lng={lng} name={name} googleMapsUrl={googleMapsUrl} />
+    </APIProvider>
+  )
+}
+
+// APIProvider içinde olduğu için useApiLoadingStatus kullanabilir
+function MapInner({ lat, lng, name, googleMapsUrl }: { lat: number; lng: number; name: string; googleMapsUrl: string }) {
+  const status = useApiLoadingStatus()
+  const position = { lat, lng }
+
+  // DNS hatası, geçersiz key veya ağ sorunu durumunda placeholder göster
+  if (status === 'FAILED') {
+    return <MapPlaceholder name={name} googleMapsUrl={googleMapsUrl} />
+  }
+
+  return (
     <div className="relative w-full h-52 overflow-hidden">
-      <APIProvider apiKey={MAPS_KEY}>
-        <Map
-          defaultCenter={position}
-          defaultZoom={15}
-          mapId="rezerv-business-map"
-          gestureHandling="cooperative"
-          disableDefaultUI
-          className="w-full h-full"
-        >
-          <AdvancedMarker position={position} title={name}>
-            <Pin background="#5d3ebc" glyphColor="#fff" borderColor="#4c3398" />
-          </AdvancedMarker>
-        </Map>
-      </APIProvider>
+      <Map
+        defaultCenter={position}
+        defaultZoom={15}
+        mapId="rezerv-business-map"
+        gestureHandling="cooperative"
+        disableDefaultUI
+        className="w-full h-full"
+      >
+        <AdvancedMarker position={position} title={name}>
+          <Pin background="#5d3ebc" glyphColor="#fff" borderColor="#4c3398" />
+        </AdvancedMarker>
+      </Map>
 
       {/* Yol Tarifi Butonu */}
       <a

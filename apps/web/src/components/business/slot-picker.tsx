@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format, addDays, isSameDay } from 'date-fns'
 import { tr } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight, Clock, CreditCard, CheckCircle } from 'lucide-react'
@@ -34,6 +34,7 @@ type Props = {
 
 export function SlotPicker({ business }: Props) {
   const { token, user } = useAuthStore()
+  const queryClient = useQueryClient()
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
   const [weekOffset, setWeekOffset] = useState(0)
@@ -63,6 +64,8 @@ export function SlotPicker({ business }: Props) {
       const reservation = res.data
       setSelectedSlot(null)
       setErrorMsg('')
+      // Slotları yenile — dolu olan slot UI'da hemen güncellenir
+      queryClient.invalidateQueries({ queryKey: ['slots', business.id, dateStr] })
       // If deposit required, initiate payment
       if (business.requiresDeposit && reservation.status === 'PENDING') {
         try {
