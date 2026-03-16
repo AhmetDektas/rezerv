@@ -112,11 +112,16 @@ adminRoutes.post(
         const rawPassword = body.ownerPassword ?? Math.random().toString(36).slice(-10)
         const hashedPassword = await bcrypt.hash(rawPassword, 12)
 
+        // Phone benzersiz olmalı: önce verilen phone'u dene, çakışırsa unique placeholder üret
+        let ownerPhone = body.ownerPhone ?? `0500${Date.now().toString().slice(-7)}`
+        const phoneInUse = await prisma.user.findFirst({ where: { phone: ownerPhone } })
+        if (phoneInUse) ownerPhone = `0500${Date.now().toString().slice(-7)}`
+
         owner = await prisma.user.create({
           data: {
             name: body.ownerName ?? body.name,
             email: body.ownerEmail,
-            phone: body.ownerPhone ?? body.phone,
+            phone: ownerPhone,
             password: hashedPassword,
             role: 'BUSINESS_OWNER',
           },
