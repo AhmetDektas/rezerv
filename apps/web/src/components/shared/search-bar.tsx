@@ -10,20 +10,33 @@ export function SearchBar() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`)
-    }
+    if (query.trim()) router.push(`/search?q=${encodeURIComponent(query.trim())}`)
   }
 
   return (
-    <form onSubmit={handleSubmit} className="relative max-w-md mx-auto">
-      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+    <form onSubmit={handleSubmit} className="relative w-full">
+      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#a2a2a2' }} />
       <input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="İşletme veya kategori ara..."
-        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="w-full pl-11 pr-4 py-3 bg-white border text-sm focus:outline-none transition-shadow"
+        style={{
+          borderColor: '#e2e2e2',
+          borderRadius: '12px',
+          boxShadow: 'rgba(93, 62, 188, 0.04) 0px 4px 16px 0px',
+          color: '#191919',
+          fontFamily: 'inherit',
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = '#5d3ebc'
+          e.currentTarget.style.boxShadow = 'rgba(93, 62, 188, 0.12) 0px 4px 16px 0px'
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = '#e2e2e2'
+          e.currentTarget.style.boxShadow = 'rgba(93, 62, 188, 0.04) 0px 4px 16px 0px'
+        }}
       />
     </form>
   )

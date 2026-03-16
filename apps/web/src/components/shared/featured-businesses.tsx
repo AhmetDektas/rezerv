@@ -1,22 +1,14 @@
 import Link from 'next/link'
 import { api } from '@/lib/api'
-import { MapPin, Wallet } from 'lucide-react'
+import { MapPin, Wallet, Clock } from 'lucide-react'
 import { CATEGORIES } from '@rezerv/types'
 import { formatCurrency } from '@rezerv/utils'
 
 type Business = {
-  id: string
-  name: string
-  slug: string
-  category: string
-  description?: string
-  address: string
-  coverImage?: string
-  logoUrl?: string
-  requiresDeposit: boolean
-  depositType?: string
-  depositAmount?: number
-  depositPercent?: number
+  id: string; name: string; slug: string; category: string
+  description?: string; address: string; coverImage?: string
+  logoUrl?: string; requiresDeposit: boolean
+  depositType?: string; depositAmount?: number; depositPercent?: number
 }
 
 export async function FeaturedBusinesses() {
@@ -30,7 +22,7 @@ export async function FeaturedBusinesses() {
 
   if (businesses.length === 0) {
     return (
-      <div className="text-center py-10 text-gray-400 text-sm">
+      <div className="text-center py-10 text-sm" style={{ color: '#a2a2a2' }}>
         Henüz kayıtlı işletme bulunmuyor.
       </div>
     )
@@ -44,45 +36,54 @@ export async function FeaturedBusinesses() {
           <Link
             key={b.id}
             href={`/businesses/${b.slug}`}
-            className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all group"
+            className="bg-white rounded-2xl overflow-hidden block transition-all"
+            style={{ boxShadow: 'rgba(93, 62, 188, 0.04) 0px 6px 24px 0px' }}
           >
             {/* Kapak Görseli */}
-            <div className="h-36 bg-gradient-to-br from-blue-50 to-blue-100 relative overflow-hidden">
+            <div className="h-32 relative overflow-hidden" style={{ backgroundColor: '#f3f0fe' }}>
               {b.coverImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={b.coverImage} alt={b.name} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-5xl opacity-30">
+                <div className="w-full h-full flex items-center justify-center text-4xl opacity-40">
                   {category?.emoji}
                 </div>
               )}
-              <span className="absolute top-2 left-2 bg-white/90 text-xs font-semibold px-2 py-0.5 rounded-full text-gray-600">
+              <span
+                className="absolute top-2 left-2 text-xs font-semibold px-2 py-0.5 rounded-full"
+                style={{ backgroundColor: '#f2f0fa', color: '#5d3ebc' }}
+              >
                 {category?.label}
               </span>
             </div>
 
             {/* İçerik */}
             <div className="p-3 space-y-1.5">
-              <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+              <h3 className="font-semibold text-sm truncate" style={{ color: '#5d3ebc' }}>
                 {b.name}
               </h3>
-              <div className="flex items-center gap-1 text-xs text-gray-400">
+              <div className="flex items-center gap-1 text-xs" style={{ color: '#6f6f6f' }}>
                 <MapPin className="w-3 h-3 shrink-0" />
                 <span className="truncate">{b.address}</span>
               </div>
-              {b.requiresDeposit && (
-                <div className="flex items-center gap-1 text-xs text-amber-600">
-                  <Wallet className="w-3 h-3" />
-                  <span>
-                    Kaparo:{' '}
-                    {b.depositType === 'FIXED' && b.depositAmount
-                      ? formatCurrency(b.depositAmount)
-                      : b.depositType === 'PERCENTAGE' && b.depositPercent
-                        ? `%${b.depositPercent}`
-                        : '—'}
-                  </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1 text-xs" style={{ color: '#6f6f6f' }}>
+                  <Clock className="w-3 h-3" />
+                  <span>~15 dk</span>
                 </div>
-              )}
+                {b.requiresDeposit && (
+                  <div className="flex items-center gap-1 text-xs" style={{ color: '#db471e' }}>
+                    <Wallet className="w-3 h-3" />
+                    <span>
+                      {b.depositType === 'FIXED' && b.depositAmount
+                        ? formatCurrency(b.depositAmount)
+                        : b.depositType === 'PERCENTAGE' && b.depositPercent
+                          ? `%${b.depositPercent} kaparo`
+                          : 'Kaparo'}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </Link>
         )

@@ -1,102 +1,97 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
+import { useState } from 'react'
+import { User, Mail, Phone, Edit3 } from 'lucide-react'
 
 export default function ProfilePage() {
-  const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState({
-    name: 'Kullanıcı Adı',
-    email: 'kullanici@email.com',
-    phone: '0555 000 0000',
-  });
-  const [form, setForm] = useState(profile);
+  const [isEditing, setIsEditing] = useState(false)
+  const [profile, setProfile] = useState({ name: 'Kullanıcı Adı', email: 'kullanici@email.com', phone: '0555 000 0000' })
+  const [form, setForm] = useState(profile)
 
-  const handleSave = () => {
-    setProfile(form);
-    setIsEditing(false);
-  };
+  const handleSave = () => { setProfile(form); setIsEditing(false) }
 
   return (
-    <div className="max-w-lg mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Profilim</h1>
+    <div className="max-w-lg mx-auto space-y-4 py-2">
+      <h1 className="text-xl font-bold" style={{ color: '#191919' }}>Profilim</h1>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+      {/* Avatar Kartı */}
+      <div className="bg-white rounded-2xl p-5" style={{ boxShadow: 'rgba(93, 62, 188, 0.04) 0px 6px 24px 0px' }}>
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-2xl font-bold text-blue-600">
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white"
+            style={{ backgroundColor: '#5d3ebc' }}
+          >
             {profile.name.charAt(0).toUpperCase()}
           </div>
-          <div>
-            <p className="font-semibold text-gray-800">{profile.name}</p>
-            <p className="text-sm text-gray-400">{profile.email}</p>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm truncate" style={{ color: '#191919' }}>{profile.name}</p>
+            <p className="text-xs mt-0.5 truncate" style={{ color: '#a2a2a2' }}>{profile.email}</p>
           </div>
+          {!isEditing && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="shrink-0 p-2 rounded-xl transition-colors"
+              style={{ backgroundColor: '#f3f0fe', color: '#5d3ebc' }}
+            >
+              <Edit3 className="w-4 h-4" />
+            </button>
+          )}
         </div>
+      </div>
 
-        <hr className="border-gray-100" />
-
+      {/* Bilgi Kartı */}
+      <div className="bg-white rounded-2xl p-5 space-y-4" style={{ boxShadow: 'rgba(93, 62, 188, 0.04) 0px 6px 24px 0px' }}>
         {isEditing ? (
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs font-medium text-gray-500 mb-1 block">Ad Soyad</label>
-              <input
-                className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-gray-500 mb-1 block">E-posta</label>
-              <input
-                className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-gray-500 mb-1 block">Telefon</label>
-              <input
-                className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              />
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={handleSave}
-                className="flex-1 bg-blue-600 text-white text-sm font-medium py-2 rounded-xl hover:bg-blue-700 transition-colors"
-              >
+          <>
+            {[
+              { label: 'Ad Soyad', key: 'name' as const, icon: User },
+              { label: 'E-posta', key: 'email' as const, icon: Mail },
+              { label: 'Telefon', key: 'phone' as const, icon: Phone },
+            ].map(({ label, key, icon: Icon }) => (
+              <div key={key}>
+                <label className="text-xs font-semibold block mb-1.5" style={{ color: '#6f6f6f' }}>{label}</label>
+                <div className="relative">
+                  <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#a2a2a2' }} />
+                  <input
+                    className="w-full pl-9 pr-4 py-2.5 text-sm border rounded-xl focus:outline-none transition-colors"
+                    style={{ borderColor: '#e2e2e2', color: '#191919', fontFamily: 'inherit' }}
+                    onFocus={(e) => e.currentTarget.style.borderColor = '#5d3ebc'}
+                    onBlur={(e) => e.currentTarget.style.borderColor = '#e2e2e2'}
+                    value={form[key]}
+                    onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                  />
+                </div>
+              </div>
+            ))}
+            <div className="flex gap-3 pt-1">
+              <button onClick={handleSave} className="flex-1 py-2.5 text-sm font-semibold rounded-xl text-white transition-colors" style={{ backgroundColor: '#5d3ebc' }}>
                 Kaydet
               </button>
-              <button
-                onClick={() => { setForm(profile); setIsEditing(false); }}
-                className="flex-1 bg-gray-100 text-gray-600 text-sm font-medium py-2 rounded-xl hover:bg-gray-200 transition-colors"
-              >
+              <button onClick={() => { setForm(profile); setIsEditing(false) }} className="flex-1 py-2.5 text-sm font-semibold rounded-xl transition-colors" style={{ backgroundColor: '#f4f4f4', color: '#3e3e3e' }}>
                 İptal
               </button>
             </div>
-          </div>
+          </>
         ) : (
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Ad Soyad</span>
-              <span className="text-gray-800 font-medium">{profile.name}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">E-posta</span>
-              <span className="text-gray-800 font-medium">{profile.email}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Telefon</span>
-              <span className="text-gray-800 font-medium">{profile.phone}</span>
-            </div>
-            <button
-              onClick={() => setIsEditing(true)}
-              className="mt-2 w-full bg-blue-50 text-blue-600 text-sm font-medium py-2 rounded-xl hover:bg-blue-100 transition-colors"
-            >
-              Profili Düzenle
-            </button>
-          </div>
+          <>
+            {[
+              { label: 'Ad Soyad', value: profile.name, icon: User },
+              { label: 'E-posta', value: profile.email, icon: Mail },
+              { label: 'Telefon', value: profile.phone, icon: Phone },
+            ].map(({ label, value, icon: Icon }) => (
+              <div key={label} className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: '#f3f0fe' }}>
+                  <Icon className="w-4 h-4" style={{ color: '#5d3ebc' }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs" style={{ color: '#a2a2a2' }}>{label}</p>
+                  <p className="text-sm font-semibold truncate" style={{ color: '#191919' }}>{value}</p>
+                </div>
+              </div>
+            ))}
+          </>
         )}
       </div>
     </div>
-  );
+  )
 }

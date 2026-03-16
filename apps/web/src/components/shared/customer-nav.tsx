@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Calendar, User } from 'lucide-react'
+import { Home, Calendar, User, MapPin } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -16,21 +16,27 @@ export function CustomerNav() {
 
   return (
     <>
-      {/* Desktop üst nav */}
-      <header className="hidden sm:flex items-center justify-between px-6 py-3 bg-white border-b border-gray-100 sticky top-0 z-50">
-        <Link href="/" className="text-xl font-bold text-gray-900">
-          Rezerv<span className="text-blue-600">.</span>
+      {/* Desktop üst nav — koyu mor Getir tarzı */}
+      <header className="hidden sm:flex items-center justify-between px-6 h-14 sticky top-0 z-50" style={{ backgroundColor: '#4c3398' }}>
+        <Link href="/" className="flex items-center gap-2">
+          <span className="text-xl font-bold text-white tracking-tight">
+            Rezerv<span style={{ color: '#ffd300' }}>.</span>
+          </span>
         </Link>
+        <div className="flex items-center gap-1 text-sm text-white/80">
+          <MapPin className="w-4 h-4" />
+          <span className="font-semibold text-white">İstanbul</span>
+        </div>
         <nav className="flex items-center gap-1">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-colors',
+                'flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-colors',
                 pathname === item.href
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-white/20 text-white'
+                  : 'text-white/70 hover:bg-white/10 hover:text-white'
               )}
             >
               <item.icon className="w-4 h-4" />
@@ -40,8 +46,19 @@ export function CustomerNav() {
         </nav>
       </header>
 
+      {/* Mobil üst başlık */}
+      <header className="sm:hidden flex items-center justify-between px-4 h-12 sticky top-0 z-50" style={{ backgroundColor: '#4c3398' }}>
+        <Link href="/" className="text-lg font-bold text-white">
+          Rezerv<span style={{ color: '#ffd300' }}>.</span>
+        </Link>
+        <div className="flex items-center gap-1 text-xs text-white/80">
+          <MapPin className="w-3.5 h-3.5" />
+          <span className="font-semibold text-white">İstanbul</span>
+        </div>
+      </header>
+
       {/* Mobil alt nav */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50 safe-area-bottom">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50">
         <div className="flex items-center justify-around py-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href
@@ -49,13 +66,18 @@ export function CustomerNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={cn(
-                  'flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors',
-                  isActive ? 'text-blue-600' : 'text-gray-400'
-                )}
+                className="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors"
               >
-                <item.icon className={cn('w-5 h-5', isActive && 'fill-blue-100')} />
-                <span className="text-xs font-medium">{item.label}</span>
+                <item.icon
+                  className="w-5 h-5"
+                  style={{ color: isActive ? '#5d3ebc' : '#a2a2a2' }}
+                />
+                <span
+                  className="text-xs font-semibold"
+                  style={{ color: isActive ? '#5d3ebc' : '#a2a2a2' }}
+                >
+                  {item.label}
+                </span>
               </Link>
             )
           })}

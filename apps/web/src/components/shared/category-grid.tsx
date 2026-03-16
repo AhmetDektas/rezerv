@@ -8,14 +8,21 @@ export function CategoryGrid() {
         <Link
           key={cat.id}
           href={`/categories/${cat.id.toLowerCase()}`}
-          className="flex flex-col items-center gap-3 p-5 bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all group"
+          className="flex flex-col items-center gap-2 p-4 bg-white rounded-2xl cursor-pointer transition-all group"
+          style={{
+            boxShadow: 'rgba(93, 62, 188, 0.04) 0px 6px 24px 0px',
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.boxShadow = 'rgba(93, 62, 188, 0.12) 0px 8px 32px 0px'
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.boxShadow = 'rgba(93, 62, 188, 0.04) 0px 6px 24px 0px'
+          }}
         >
-          <span className="text-4xl">{cat.emoji}</span>
+          <span className="text-3xl">{cat.emoji}</span>
           <div className="text-center">
-            <div className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
-              {cat.label}
-            </div>
-            <div className="text-xs text-gray-400 mt-0.5">{cat.description}</div>
+            <div className="font-semibold text-sm" style={{ color: '#5d3ebc' }}>{cat.label}</div>
+            <div className="text-xs mt-0.5" style={{ color: '#a2a2a2' }}>{cat.description}</div>
           </div>
         </Link>
       ))}
