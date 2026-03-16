@@ -11,6 +11,7 @@ import { slotRoutes } from './routes/slots'
 import { petRoutes } from './routes/pets'
 import { paymentRoutes } from './routes/payments'
 import { subscriptionRoutes } from './routes/subscriptions'
+import { adminRoutes } from './routes/admin'
 
 const app = new Hono()
 
@@ -20,12 +21,20 @@ app.use('*', prettyJSON())
 app.use(
   '*',
   cors({
-    origin: [
-      process.env.WEB_URL ?? 'http://localhost:3000',
-      process.env.MOBILE_URL ?? 'http://localhost:8081',
-    ],
+    origin: (origin) => {
+      const allowed = [
+        process.env.WEB_URL ?? 'http://localhost:3000',
+        process.env.MOBILE_URL ?? 'http://localhost:8081',
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://89.167.19.1:3001',
+        'http://89.167.19.1:3000',
+      ]
+      if (!origin || allowed.includes(origin)) return origin ?? '*'
+      return null
+    },
     credentials: true,
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Admin-Token'],
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   })
 )
@@ -42,6 +51,7 @@ app.route('/api/slots', slotRoutes)
 app.route('/api/pets', petRoutes)
 app.route('/api/payments', paymentRoutes)
 app.route('/api/subscriptions', subscriptionRoutes)
+app.route('/api/admin', adminRoutes)
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: 'Bulunamadı' }, 404))
