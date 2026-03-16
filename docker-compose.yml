@@ -36,6 +36,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-rezerv}:${POSTGRES_PASSWORD}@postgres:5432/rezerv
       JWT_SECRET: ${JWT_SECRET:?JWT secret gerekli}
       WEB_URL: http://89.167.19.1:3001
+      DASHBOARD_URL: http://89.167.19.1:3002
       ADMIN_SECRET: ${ADMIN_SECRET:-}
       IYZICO_API_KEY: ${IYZICO_API_KEY:-}
       IYZICO_SECRET_KEY: ${IYZICO_SECRET_KEY:-}
@@ -63,6 +64,26 @@ services:
       - postgres
     ports:
       - '0.0.0.0:3001:3000'
+    healthcheck:
+      test: ['CMD-SHELL', 'node -e "require(\"http\").get(\"http://localhost:3000\", r => process.exit(r.statusCode < 500 ? 0 : 1)).on(\"error\", () => process.exit(1))"']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ─── Next.js Dashboard (İşletme Paneli) ─────────────────────────────────────
+  dashboard:
+    build:
+      context: .
+      dockerfile: apps/dashboard/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://89.167.19.1:4000
+    container_name: rezerv-dashboard
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - '0.0.0.0:3002:3000'
     healthcheck:
       test: ['CMD-SHELL', 'node -e "require(\"http\").get(\"http://localhost:3000\", r => process.exit(r.statusCode < 500 ? 0 : 1)).on(\"error\", () => process.exit(1))"']
       interval: 30s

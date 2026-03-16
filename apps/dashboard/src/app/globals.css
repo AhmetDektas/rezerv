@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;           /* #fafafa */
+    --foreground: 0 0% 10%;           /* #191919 */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 259 52% 49%;           /* #5d3ebc */
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 259 79% 96%;     /* #f3f0fe */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 0 0% 44%;     /* #707070 */
+    --accent: 259 79% 96%;
+    --accent-foreground: 259 52% 49%;
+    --destructive: 16 75% 48%;        /* #db471e */
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 89%;               /* #e2e2e2 */
+    --input: 0 0% 89%;
+    --ring: 259 52% 49%;
+    --radius: 0.75rem;
+    --nav-bg: 259 52% 40%;            /* #4c3398 */
+  }
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 259 52% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 259 52% 60%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; box-sizing: border-box; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+@layer utilities {
+  .card-shadow {
+    box-shadow: rgba(93, 62, 188, 0.04) 0px 6px 24px 0px;
+    transition: box-shadow 0.2s ease;
+  }
+  .card-shadow:hover {
+    box-shadow: rgba(93, 62, 188, 0.12) 0px 8px 32px 0px;
+  }
+}

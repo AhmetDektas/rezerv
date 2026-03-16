@@ -12,6 +12,7 @@ import { petRoutes } from './routes/pets'
 import { paymentRoutes } from './routes/payments'
 import { subscriptionRoutes } from './routes/subscriptions'
 import { adminRoutes } from './routes/admin'
+import { dashboardRoutes } from './routes/dashboard'
 
 const app = new Hono()
 
@@ -27,14 +28,17 @@ app.use(
         process.env.MOBILE_URL ?? 'http://localhost:8081',
         'http://localhost:3000',
         'http://localhost:3001',
+        'http://localhost:3002',
         'http://89.167.19.1:3001',
+        'http://89.167.19.1:3002',
         'http://89.167.19.1:3000',
+        process.env.DASHBOARD_URL ?? 'http://localhost:3002',
       ]
       if (!origin || allowed.includes(origin)) return origin ?? '*'
       return null
     },
     credentials: true,
-    allowHeaders: ['Content-Type', 'Authorization', 'X-Admin-Token'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Admin-Token', 'X-Business-Id'],
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   })
 )
@@ -52,6 +56,7 @@ app.route('/api/pets', petRoutes)
 app.route('/api/payments', paymentRoutes)
 app.route('/api/subscriptions', subscriptionRoutes)
 app.route('/api/admin', adminRoutes)
+app.route('/api/dashboard', dashboardRoutes)
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: 'Bulunamadı' }, 404))

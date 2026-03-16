@@ -86,6 +86,18 @@ enum UserRole {
   ADMIN
 }
 
+enum StaffRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+enum ChangeStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // ─── USERS ────────────────────────────────────────────────────────────────────
 
 model User {
@@ -99,10 +111,12 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  reservations Reservation[]
-  pets         Pet[]
-  businesses   Business[]    @relation("BusinessOwner")
-  sessions     Session[]
+  reservations   Reservation[]
+  pets           Pet[]
+  businesses     Business[]     @relation("BusinessOwner")
+  sessions       Session[]
+  staffRoles     BusinessStaff[]
+  changeRequests ChangeRequest[]
 }
 
 model Session {
@@ -148,14 +162,111 @@ model Business {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner        User                 @relation("BusinessOwner", fields: [ownerId], references: [id])
-  hours        BusinessHour[]
-  slots        TimeSlot[]
-  reservations Reservation[]
-  subscription BusinessSubscription?
+  socialLinks  Json?   // { instagram, twitter, website, whatsapp }
+  isVerified   Boolean @default(false)
+
+  owner            User                 @relation("BusinessOwner", fields: [ownerId], references: [id])
+  hours            BusinessHour[]
+  slots            TimeSlot[]
+  reservations     Reservation[]
+  subscription     BusinessSubscription?
+  staff            BusinessStaff[]
+  serviceCategories ServiceCategory[]
+  services         Service[]
+  campaigns        Campaign[]
+  changeRequests   ChangeRequest[]
 
   @@index([category])
   @@index([slug])
+}
+
+// ─── BUSINESS STAFF ───────────────────────────────────────────────────────────
+
+model BusinessStaff {
+  id         String    @id @default(cuid())
+  businessId String
+  userId     String
+  role       StaffRole @default(STAFF)
+  invitedAt  DateTime  @default(now())
+  acceptedAt DateTime?
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, userId])
+}
+
+// ─── SERVICE CATEGORIES ───────────────────────────────────────────────────────
+
+model ServiceCategory {
+  id         String   @id @default(cuid())
+  businessId String
+  name       String
+  order      Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  business Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  services Service[]
+}
+
+// ─── SERVICES / PRODUCTS ──────────────────────────────────────────────────────
+
+model Service {
+  id          String   @id @default(cuid())
+  businessId  String
+  categoryId  String?
+  name        String
+  description String?
+  price       Float
+  duration    Int?     // dakika cinsinden
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  business Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  category ServiceCategory? @relation(fields: [categoryId], references: [id])
+
+  @@index([businessId])
+}
+
+// ─── CAMPAIGNS ────────────────────────────────────────────────────────────────
+
+model Campaign {
+  id             String   @id @default(cuid())
+  businessId     String
+  title          String
+  description    String?
+  bannerUrl      String?
+  discountType   String?  // "FIXED" | "PERCENTAGE"
+  discountAmount Float?
+  startDate      DateTime
+  endDate        DateTime
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+// ─── CHANGE REQUESTS (Admin onay kuyruğu) ────────────────────────────────────
+
+model ChangeRequest {
+  id          String       @id @default(cuid())
+  businessId  String
+  requestedBy String
+  field       String       // "name" | "category" | "address"
+  oldValue    String
+  newValue    String
+  status      ChangeStatus @default(PENDING)
+  reviewedBy  String?
+  reviewNote  String?
+  createdAt   DateTime     @default(now())
+  reviewedAt  DateTime?
+
+  business  Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  requester User     @relation(fields: [requestedBy], references: [id])
 }
 
 model BusinessHour {
