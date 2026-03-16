@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { format, addDays, isSameDay } from 'date-fns'
 import { tr } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Clock } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Clock, CreditCard, CheckCircle } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
 import { cn } from '@/lib/utils'
@@ -39,6 +39,8 @@ export function SlotPicker({ business }: Props) {
   const [weekOffset, setWeekOffset] = useState(0)
   const [successMsg, setSuccessMsg] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const [pendingPayment, setPendingPayment] = useState<{ paymentId: string; amount: number; label: string } | null>(null)
+  const [payConfirming, setPayConfirming] = useState(false)
 
   const dateStr = format(selectedDate, 'yyyy-MM-dd')
 
@@ -52,16 +54,31 @@ export function SlotPicker({ business }: Props) {
 
   const reserveMutation = useMutation({
     mutationFn: (slotId: string) =>
-      api.post(
+      api.post<{ data: { id: string; status: string } }>(
         '/api/reservations',
         { businessId: business.id, slotId },
         token ?? undefined
       ),
-    onSuccess: () => {
+    onSuccess: async (res) => {
+      const reservation = res.data
       setSelectedSlot(null)
       setErrorMsg('')
-      setSuccessMsg('Rezervasyonunuz başarıyla oluşturuldu! 🎉')
-      setTimeout(() => setSuccessMsg(''), 5000)
+      // If deposit required, initiate payment
+      if (business.requiresDeposit && reservation.status === 'PENDING') {
+        try {
+          const payRes = await api.post<{ data: { paymentId: string; amount: number; label: string } }>(
+            '/api/payments/initiate',
+            { reservationId: reservation.id },
+            token ?? undefined
+          )
+          setPendingPayment(payRes.data)
+        } catch {
+          setSuccessMsg('Rezervasyonunuz alındı! Kapora ödeme bağlantısı yakında gelecek.')
+        }
+      } else {
+        setSuccessMsg('Rezervasyonunuz onaylandı! 🎉')
+        setTimeout(() => setSuccessMsg(''), 6000)
+      }
     },
     onError: (err: Error) => {
       setErrorMsg(err.message || 'Rezervasyon oluşturulamadı')
@@ -166,9 +183,47 @@ export function SlotPicker({ business }: Props) {
         )}
       </div>
 
+      {/* Kapora Ödeme Adımı */}
+      {pendingPayment && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <CreditCard className="w-5 h-5 text-amber-600" />
+            <span className="font-semibold text-amber-800 text-sm">Kapora Ödemesi Gerekli</span>
+          </div>
+          <div className="flex justify-between text-sm text-amber-700">
+            <span>Kapora Tutarı</span>
+            <span className="font-bold">₺{pendingPayment.amount.toLocaleString('tr-TR')}</span>
+          </div>
+          <p className="text-xs text-amber-600">
+            Rezervasyonunuzu onaylamak için kapora ödemesi yapmanız gerekmektedir.
+          </p>
+          <button
+            disabled={payConfirming}
+            onClick={async () => {
+              setPayConfirming(true)
+              try {
+                await api.post('/api/payments/mock-confirm', { paymentId: pendingPayment.paymentId }, token ?? undefined)
+                setPendingPayment(null)
+                setSuccessMsg('Ödeme alındı! Rezervasyonunuz onaylandı. 🎉')
+                setTimeout(() => setSuccessMsg(''), 6000)
+              } catch (err: Error | unknown) {
+                setErrorMsg(err instanceof Error ? err.message : 'Ödeme başarısız')
+              } finally {
+                setPayConfirming(false)
+              }
+            }}
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-60 text-sm flex items-center justify-center gap-2"
+          >
+            <CreditCard className="w-4 h-4" />
+            {payConfirming ? 'İşleniyor...' : `₺${pendingPayment.amount.toLocaleString('tr-TR')} Kapora Öde`}
+          </button>
+        </div>
+      )}
+
       {/* Başarı / Hata Mesajı */}
       {successMsg && (
         <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
           <span className="text-green-600 text-sm font-medium">{successMsg}</span>
         </div>
       )}

@@ -11,9 +11,9 @@ type Reservation = {
   status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW'
   notes: string | null
   createdAt: string
-  business: { name: string; address: string; logoUrl: string | null }
+  business: { name: string; address: string; logoUrl: string | null; requiresDeposit: boolean }
   slot: { date: string; startTime: string; endTime: string }
-  payment: { amount: number } | null
+  payment: { id: string; amount: number; status: string } | null
 }
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
@@ -35,18 +35,56 @@ export default function MyBookingsPage() {
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [actionId, setActionId] = useState<string | null>(null)
+
+  function loadReservations() {
+    setLoading(true)
+    api
+      .get<{ data: Reservation[] }>('/api/reservations/my', token ?? undefined)
+      .then((res) => setReservations(res.data ?? []))
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false))
+  }
 
   useEffect(() => {
     if (!user) {
       router.replace('/auth/login')
       return
     }
-    api
-      .get<{ data: Reservation[] }>('/api/reservations/my', token ?? undefined)
-      .then((res) => setReservations(res.data ?? []))
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false))
+    loadReservations()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, token, router])
+
+  async function cancelReservation(id: string) {
+    if (!confirm('Rezervasyonu iptal etmek istediğinize emin misiniz?')) return
+    setActionId(id)
+    try {
+      await api.patch('/api/reservations/' + id + '/cancel', {}, token ?? undefined)
+      loadReservations()
+    } catch (err: Error | unknown) {
+      alert(err instanceof Error ? err.message : 'İptal başarısız')
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  async function payDeposit(reservationId: string) {
+    setActionId(reservationId)
+    try {
+      const res = await api.post<{ data: { paymentId: string; amount: number } }>(
+        '/api/payments/initiate',
+        { reservationId },
+        token ?? undefined
+      )
+      // Mock confirm immediately for now
+      await api.post('/api/payments/mock-confirm', { paymentId: res.data.paymentId }, token ?? undefined)
+      loadReservations()
+    } catch (err: Error | unknown) {
+      alert(err instanceof Error ? err.message : 'Ödeme başarısız')
+    } finally {
+      setActionId(null)
+    }
+  }
 
   if (!user) return null
 
@@ -122,12 +160,36 @@ export default function MyBookingsPage() {
                     )}
                   </div>
                 </div>
-                <span
-                  className="text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap"
-                  style={{ backgroundColor: s.bg, color: s.color }}
-                >
-                  {s.label}
-                </span>
+                <div className="flex flex-col items-end gap-2">
+                  <span
+                    className="text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap"
+                    style={{ backgroundColor: s.bg, color: s.color }}
+                  >
+                    {s.label}
+                  </span>
+                  {/* Kapora öde butonu */}
+                  {r.status === 'PENDING' && r.business.requiresDeposit && !r.payment && (
+                    <button
+                      disabled={actionId === r.id}
+                      onClick={() => payDeposit(r.id)}
+                      className="text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap transition-colors"
+                      style={{ backgroundColor: '#fef3c7', color: '#b45309' }}
+                    >
+                      {actionId === r.id ? '...' : 'Kapora Öde'}
+                    </button>
+                  )}
+                  {/* İptal butonu */}
+                  {(r.status === 'PENDING' || r.status === 'CONFIRMED') && (
+                    <button
+                      disabled={actionId === r.id}
+                      onClick={() => cancelReservation(r.id)}
+                      className="text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap transition-colors"
+                      style={{ backgroundColor: '#fff1ee', color: '#db471e' }}
+                    >
+                      {actionId === r.id ? '...' : 'İptal Et'}
+                    </button>
+                  )}
+                </div>
               </div>
             )
           })}

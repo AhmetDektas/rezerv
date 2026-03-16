@@ -305,6 +305,80 @@ dashboardRoutes.put(
   }
 )
 
+// ─── Slot Oluştur (saatlere göre otomatik) ───────────────────────────────────
+
+dashboardRoutes.post(
+  '/slots/generate',
+  zValidator(
+    'json',
+    z.object({
+      days: z.number().int().min(1).max(90).default(30),
+      durationMinutes: z.number().int().min(15).max(480).default(60),
+      capacity: z.number().int().min(1).max(100).default(1),
+    })
+  ),
+  async (c) => {
+    const businessId = c.get('businessId')
+    const staffRole = c.get('staffRole')
+    const { days, durationMinutes, capacity } = c.req.valid('json')
+
+    if (!isAtLeastManager(staffRole)) {
+      return c.json({ error: 'Bu işlem için yönetici yetkisi gerekli' }, 403)
+    }
+
+    const hours = await prisma.businessHour.findMany({ where: { businessId } })
+    if (hours.length === 0) {
+      return c.json({ error: 'Önce çalışma saatlerini kaydedin' }, 400)
+    }
+
+    // dayOfWeek: 0=Mon...6=Sun  →  JS getDay(): 0=Sun, 1=Mon...6=Sat
+    // API uses 0=Monday...6=Sunday, JS Date uses 0=Sunday...6=Saturday
+    const hourMap: Record<number, { openTime: string; closeTime: string; isClosed: boolean }> = {}
+    for (const h of hours) { hourMap[h.dayOfWeek] = h }
+
+    const slots: Array<{ businessId: string; date: Date; startTime: string; endTime: string; capacity: number }> = []
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    for (let d = 0; d < days; d++) {
+      const date = new Date(today)
+      date.setDate(today.getDate() + d)
+
+      // Convert JS day (0=Sun) to our format (0=Mon...6=Sun)
+      const jsDay = date.getDay() // 0=Sun, 1=Mon...6=Sat
+      const ourDay = jsDay === 0 ? 6 : jsDay - 1 // 0=Mon...6=Sun
+
+      const dayHours = hourMap[ourDay]
+      if (!dayHours || dayHours.isClosed) continue
+
+      const [openH, openM] = dayHours.openTime.split(':').map(Number)
+      const [closeH, closeM] = dayHours.closeTime.split(':').map(Number)
+
+      let cur = openH * 60 + openM
+      const end = closeH * 60 + closeM
+
+      while (cur + durationMinutes <= end) {
+        const startTime = `${String(Math.floor(cur / 60)).padStart(2, '0')}:${String(cur % 60).padStart(2, '0')}`
+        const endMin = cur + durationMinutes
+        const endTime = `${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`
+        slots.push({ businessId, date: new Date(date), startTime, endTime, capacity })
+        cur += durationMinutes
+      }
+    }
+
+    // Remove existing unbooked slots in this date range and recreate
+    const endDate = new Date(today)
+    endDate.setDate(today.getDate() + days)
+    await prisma.timeSlot.deleteMany({
+      where: { businessId, date: { gte: today, lt: endDate }, booked: 0 },
+    })
+
+    await prisma.timeSlot.createMany({ data: slots, skipDuplicates: true })
+
+    return c.json({ data: { created: slots.length, days } })
+  }
+)
+
 // ─── Services ─────────────────────────────────────────────────────────────────
 
 dashboardRoutes.get('/services', async (c) => {

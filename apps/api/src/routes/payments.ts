@@ -84,6 +84,38 @@ paymentRoutes.get('/:reservationId', authMiddleware, async (c) => {
   return c.json({ data: payment })
 })
 
+// ─── Mock Ödeme Onayla (TEST) ─────────────────────────────────────────────────
+paymentRoutes.post(
+  '/mock-confirm',
+  authMiddleware,
+  zValidator('json', z.object({ paymentId: z.string() })),
+  async (c) => {
+    const { userId } = c.get('user')
+    const { paymentId } = c.req.valid('json')
+
+    const payment = await prisma.payment.findFirst({
+      where: { id: paymentId, reservation: { userId } },
+      include: { reservation: true },
+    })
+
+    if (!payment) return c.json({ error: 'Ödeme bulunamadı' }, 404)
+    if (payment.status === 'PAID') return c.json({ error: 'Ödeme zaten tamamlandı' }, 409)
+
+    await prisma.$transaction(async (tx) => {
+      await tx.payment.update({
+        where: { id: paymentId },
+        data: { status: 'PAID', transactionId: `MOCK_${Date.now()}` },
+      })
+      await tx.reservation.update({
+        where: { id: payment.reservationId },
+        data: { status: 'CONFIRMED' },
+      })
+    })
+
+    return c.json({ data: { message: 'Ödeme tamamlandı, rezervasyon onaylandı' } })
+  }
+)
+
 // ─── iyzico Webhook (Ödeme Sonucu) ───────────────────────────────────────────
 paymentRoutes.post('/webhook/iyzico', async (c) => {
   // TODO: iyzico imza doğrulaması

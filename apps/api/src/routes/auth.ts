@@ -106,6 +106,39 @@ authRoutes.post(
   }
 )
 
+// ─── Müşteri Kaydı (kısa yol) ────────────────────────────────────────────────
+authRoutes.post(
+  '/register',
+  zValidator(
+    'json',
+    z.object({
+      name: z.string().min(2),
+      email: z.string().email(),
+      phone: z.string().min(10),
+      password: z.string().min(6),
+    })
+  ),
+  async (c) => {
+    const body = c.req.valid('json')
+
+    const existing = await prisma.user.findFirst({
+      where: { OR: [{ email: body.email }, { phone: body.phone }] },
+    })
+
+    if (existing) {
+      return c.json({ error: 'Bu email veya telefon zaten kayıtlı' }, 409)
+    }
+
+    const hashedPassword = await bcrypt.hash(body.password, 12)
+    const user = await prisma.user.create({
+      data: { name: body.name, email: body.email, phone: body.phone, password: hashedPassword, role: 'CUSTOMER' },
+    })
+
+    const token = signToken({ userId: user.id, role: user.role })
+    return c.json({ data: { token, user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role, avatarUrl: user.avatarUrl } } }, 201)
+  }
+)
+
 // ─── Giriş ────────────────────────────────────────────────────────────────────
 authRoutes.post(
   '/login',

@@ -135,16 +135,17 @@ export default function ProfilePage() {
   async function fetchProfile() {
     setLoading(true)
     try {
-      const res = await apiRequest<{ business: BusinessProfile; changeRequests?: ChangeRequest[] }>(
-        '/api/dashboard/profile'
-      )
-      setProfile(res.business)
-      setPhone(res.business.phone ?? '')
-      setEmail(res.business.email ?? '')
-      setDescription(res.business.description ?? '')
-      setLogoUrl(res.business.logoUrl ?? '')
-      setCoverImage(res.business.coverImage ?? '')
-      setChangeRequests(res.changeRequests ?? [])
+      const [biz, crRes] = await Promise.all([
+        apiRequest<BusinessProfile>('/api/dashboard/profile'),
+        apiRequest<ChangeRequest[]>('/api/dashboard/profile/change-requests').catch(() => []),
+      ])
+      setProfile(biz)
+      setPhone(biz.phone ?? '')
+      setEmail(biz.email ?? '')
+      setDescription(biz.description ?? '')
+      setLogoUrl(biz.logoUrl ?? '')
+      setCoverImage(biz.coverImage ?? '')
+      setChangeRequests(Array.isArray(crRes) ? crRes : [])
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Profil yüklenemedi')
     } finally {

@@ -15,7 +15,7 @@ import {
   Menu,
   X,
 } from 'lucide-react'
-import { clearAuth } from '@/lib/api'
+import { clearAuth, apiRequest } from '@/lib/api'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -32,6 +32,7 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
   const [businessName, setBusinessName] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [pendingCount, setPendingCount] = useState(0)
 
   useEffect(() => {
     const token = sessionStorage.getItem('dashboard_token')
@@ -41,6 +42,18 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
     }
     setBusinessName(sessionStorage.getItem('dashboard_business_name') ?? 'İşletme')
   }, [router])
+
+  useEffect(() => {
+    async function fetchPending() {
+      try {
+        const res = await apiRequest<{ reservations?: { id: string }[] }>('/api/dashboard/reservations?status=PENDING&limit=100')
+        setPendingCount(res.reservations?.length ?? 0)
+      } catch { /* ignore */ }
+    }
+    fetchPending()
+    const interval = setInterval(fetchPending, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   function handleLogout() {
     clearAuth()
@@ -92,7 +105,12 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
                 }`}
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
-                {label}
+                <span className="flex-1">{label}</span>
+                {href === '/reservations' && pendingCount > 0 && (
+                  <span className="ml-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                    {pendingCount > 99 ? '99+' : pendingCount}
+                  </span>
+                )}
               </Link>
             )
           })}

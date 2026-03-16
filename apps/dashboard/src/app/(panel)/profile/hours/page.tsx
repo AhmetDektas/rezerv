@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { apiRequest } from '@/lib/api'
-import { Save, ArrowLeft } from 'lucide-react'
+import { Save, ArrowLeft, Zap } from 'lucide-react'
 import Link from 'next/link'
 
 interface DayHours {
@@ -24,6 +24,7 @@ const DAY_LABELS: Record<string, string> = {
 }
 
 const DAY_ORDER = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
+const DAY_NUMBER: Record<string, number> = { MONDAY: 0, TUESDAY: 1, WEDNESDAY: 2, THURSDAY: 3, FRIDAY: 4, SATURDAY: 5, SUNDAY: 6 }
 
 function defaultHours(): DayHours[] {
   return DAY_ORDER.map((day) => ({
@@ -39,6 +40,9 @@ export default function HoursPage() {
   const [hours, setHours] = useState<DayHours[]>(defaultHours())
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [generating, setGenerating] = useState(false)
+  const [genDays, setGenDays] = useState(30)
+  const [genDuration, setGenDuration] = useState(60)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -46,18 +50,24 @@ export default function HoursPage() {
     async function fetchHours() {
       setLoading(true)
       try {
-        const res = await apiRequest<{ hours?: Record<string, { isClosed?: boolean; openTime?: string; closeTime?: string }> }>(
+        const res = await apiRequest<{ hours?: { dayOfWeek: number; isClosed: boolean; openTime: string; closeTime: string }[] }>(
           '/api/dashboard/profile'
         )
-        if (res.hours) {
+        if (res.hours && res.hours.length > 0) {
+          // Convert array [{dayOfWeek:0,...}] to keyed map
+          const map: Record<number, { isClosed: boolean; openTime: string; closeTime: string }> = {}
+          res.hours.forEach((h) => { map[h.dayOfWeek] = h })
           setHours(
-            DAY_ORDER.map((day) => ({
-              day,
-              dayLabel: DAY_LABELS[day],
-              isClosed: res.hours?.[day]?.isClosed ?? (day === 'SUNDAY'),
-              openTime: res.hours?.[day]?.openTime ?? '09:00',
-              closeTime: res.hours?.[day]?.closeTime ?? '18:00',
-            }))
+            DAY_ORDER.map((day) => {
+              const num = DAY_NUMBER[day]
+              return {
+                day,
+                dayLabel: DAY_LABELS[day],
+                isClosed: map[num]?.isClosed ?? (day === 'SUNDAY'),
+                openTime: map[num]?.openTime ?? '09:00',
+                closeTime: map[num]?.closeTime ?? '18:00',
+              }
+            })
           )
         }
       } catch {
@@ -81,13 +91,15 @@ export default function HoursPage() {
     setError('')
     setSuccess('')
     try {
-      const body: Record<string, { isClosed: boolean; openTime: string; closeTime: string }> = {}
-      hours.forEach((h) => {
-        body[h.day] = { isClosed: h.isClosed, openTime: h.openTime, closeTime: h.closeTime }
-      })
+      const hoursArr = hours.map((h) => ({
+        dayOfWeek: DAY_NUMBER[h.day],
+        isClosed: h.isClosed,
+        openTime: h.openTime,
+        closeTime: h.closeTime,
+      }))
       await apiRequest('/api/dashboard/hours', {
         method: 'PUT',
-        body: JSON.stringify(body),
+        body: JSON.stringify({ hours: hoursArr }),
       })
       setSuccess('Çalışma saatleri güncellendi.')
     } catch (err: unknown) {
@@ -187,6 +199,64 @@ export default function HoursPage() {
           {saving ? 'Kaydediliyor...' : 'Kaydet'}
         </button>
       </form>
+
+      {/* Slot Auto-Generation */}
+      <div className="bg-white rounded-xl card-shadow p-6 mt-4">
+        <h2 className="font-semibold text-foreground mb-1">Rezervasyon Slotları Oluştur</h2>
+        <p className="text-xs text-muted-foreground mb-4">
+          Çalışma saatlerinize göre ilerleyen günler için rezervasyon slotlarını otomatik oluşturun.
+        </p>
+        <div className="flex items-end gap-4 flex-wrap">
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">Kaç gün ilerisi</label>
+            <select
+              value={genDays}
+              onChange={(e) => setGenDays(Number(e.target.value))}
+              className="px-3 py-2 border border-border rounded-lg text-sm bg-white focus:outline-none focus:border-brand-purple"
+            >
+              {[7, 14, 30, 60, 90].map((d) => (
+                <option key={d} value={d}>{d} gün</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">Slot süresi</label>
+            <select
+              value={genDuration}
+              onChange={(e) => setGenDuration(Number(e.target.value))}
+              className="px-3 py-2 border border-border rounded-lg text-sm bg-white focus:outline-none focus:border-brand-purple"
+            >
+              {[30, 45, 60, 90, 120].map((d) => (
+                <option key={d} value={d}>{d} dakika</option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="button"
+            disabled={generating}
+            onClick={async () => {
+              setGenerating(true)
+              setError('')
+              setSuccess('')
+              try {
+                const res = await apiRequest<{ created: number; days: number }>(
+                  '/api/dashboard/slots/generate',
+                  { method: 'POST', body: JSON.stringify({ days: genDays, durationMinutes: genDuration, capacity: 1 }) }
+                )
+                setSuccess(`✓ ${res.created} slot oluşturuldu (${res.days} gün).`)
+              } catch (err: unknown) {
+                setError(err instanceof Error ? err.message : 'Slot oluşturulamadı')
+              } finally {
+                setGenerating(false)
+              }
+            }}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors disabled:opacity-60"
+          >
+            <Zap className="w-4 h-4" />
+            {generating ? 'Oluşturuluyor...' : 'Slotları Oluştur'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
